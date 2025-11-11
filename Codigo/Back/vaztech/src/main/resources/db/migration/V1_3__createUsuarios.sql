@@ -1,0 +1,4 @@
+CREATE TABLE Usuarios (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    senha VARCHAR(255) NOT NULL
+);

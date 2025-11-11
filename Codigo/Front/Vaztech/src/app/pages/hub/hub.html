@@ -1,0 +1,28 @@
+<main class="gridPattern flex p-4 space-x-4">
+  <p-menu
+    class="appMenu"
+    [model]="sidebarItens"
+    [style]="{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+    }"
+  >
+    <ng-template #end>
+      <button
+        type="button"
+        icon="pi pi-sign-out"
+        pButton
+        label="Deslogar"
+        severity="danger"
+        fluid
+        (click)="deslogar()"
+        [text]="true"
+      ></button>
+    </ng-template>
+  </p-menu>
+  <p-panel class="flex flex-1 overflow-y-auto" [header]="selectedItem">
+    <router-outlet></router-outlet>
+  </p-panel>
+</main>

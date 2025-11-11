@@ -1,0 +1,299 @@
+<p-toast />
+<main>
+  <p-toolbar>
+    <ng-template #start>
+      <section class="flex space-x-4">
+        <p-iconfield iconPosition="left">
+          <p-inputicon class="pi pi-search" />
+          <input [(ngModel)]="searchText" type="text" placeholder="ID..." pInputText class="w-96" />
+        </p-iconfield>
+        <p-button
+          [outlined]="true"
+          [rounded]="true"
+          severity="secondary"
+          label="Pesquisar"
+          (click)="onPesquisar()"
+        ></p-button>
+        @if (searchText.length > 0) {
+          <p-button
+            [outlined]="true"
+            [rounded]="true"
+            severity="secondary"
+            label="Limpar Busca"
+            icon="pi pi-times-circle"
+            (click)="onLimparPesquisa()"
+          ></p-button>
+        }
+      </section>
+    </ng-template>
+    <ng-template #end>
+      <p-button
+        label="Realizar Operação"
+        icon="pi pi-plus"
+        (click)="irParaAdicionarOperacao()"
+      ></p-button>
+    </ng-template>
+  </p-toolbar>
+
+  <p-tabs [(value)]="abaAtual">
+    <p-tablist>
+      <p-tab [value]="0">Vendas</p-tab>
+      <p-tab [value]="1">Compras</p-tab>
+      <p-tab [value]="2">Registrar Operação</p-tab>
+      @for (operacaoEdit of operacoesEdicao; track operacaoEdit.id; let index = $index) {
+        <p-tab [value]="index + 3"
+          >Op #{{ operacaoEdit.id }}
+          <p-button
+            icon="pi pi-times"
+            severity="danger"
+            [text]="true"
+            [style]="{
+              width: '0.5rem',
+              height: '0.5rem',
+              padding: '0.6rem',
+              marginLeft: '0.5rem',
+            }"
+            (click)="fecharAba(index, { reload: false })"
+        /></p-tab>
+      }
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel [value]="1">
+        <div class="flex flex-col">
+          <!-- Aba de Compras -->
+          <div class="flex gap-4 flex-wrap pt-4 pb-4">
+            @if (operacoesCompra.length > 0) {
+              @for (operacao of operacoesCompra; track operacao.id) {
+                <p-card [style]="{ width: '45%' }" severity="danger">
+                  <ng-template #title>
+                    <section class="flex justify-between items-center">
+                      <div class="flex flex-1 items-center justify-between">
+                        <div class="flex">
+                          <p-avatar
+                            [icon]="operacao.tipo == 0 ? 'pi pi-dollar' : 'pi pi-shopping-cart'"
+                            class="mr-2"
+                            size="large"
+                            shape="circle"
+                          />
+                          <div class="flex flex-col justify-center">
+                            <span class="font-bold text-primary">Operação #{{ operacao.id }}</span>
+                            <span class="text-sm text-neutral-500"
+                              ><strong> Numero de Série: </strong
+                              >{{ operacao.produto.numeroSerie }}</span
+                            >
+                          </div>
+                        </div>
+                        <div class="space-x-4 flex items-center">
+                          <p-message
+                            [severity]="operacao.tipo === 0 ? 'success' : 'error'"
+                            size="small"
+                            >{{ operacao.tipo === 0 ? 'Venda' : 'Compra' }}</p-message
+                          >
+                          <p-button
+                            (click)="abrirModalCodigo(operacao)"
+                            icon="pi pi-pen-to-square"
+                            pTooltip="Editar Operação"
+                            tooltipPosition="bottom"
+                            [text]="true"
+                            severity="secondary"
+                            [rounded]="true"
+                          ></p-button>
+                        </div>
+                      </div>
+                    </section>
+                  </ng-template>
+                  <section class="flex justify-between">
+                    <div class="text-sm text-gray-700 flex-1">
+                      <p><strong>Cliente: </strong> {{ operacao.pessoa.nome }}</p>
+                      <p class="text-sm text-gray-700">
+                        <strong>Funcionário: </strong>{{ operacao.funcionario.nome }}
+                      </p>
+                    </div>
+                    <div
+                      class="text-sm text-gray-700 flex-1 border-l-neutral-300 ps-2 items-end flex flex-col border-l-2"
+                    >
+                      <p>
+                        <strong>Data da Transação: </strong>{{ operacao.dataHoraTransacao | date }}
+                      </p>
+                      <p [ngClass]="operacao.tipo === 0 ? 'text-green-600' : 'text-red-600'">
+                        <strong>Valor: </strong>{{ operacao.valor | currency: 'BRL' }}
+                      </p>
+                    </div>
+                  </section>
+                </p-card>
+              }
+            } @else {
+              <p-card
+                [header]="
+                  searchText.length <= 0
+                    ? 'Não há operações cadastradas!'
+                    : 'Não foram encontradas operações de compra'
+                "
+                class="w-full"
+              >
+                <p class="m-0">
+                  {{
+                    searchText.length <= 0
+                      ? 'Comece a adicionar operações de compra no sistema para vê-las aqui!'
+                      : 'Modifique seus parâmetros de busca e tente novamente!'
+                  }}
+                </p>
+              </p-card>
+            }
+          </div>
+          @if (operacoesCompra.length > 0) {
+            <div class="flex justify-center pt-4">
+              <p-paginator
+                [rows]="itensPorPaginaCompra"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="{totalRecords} compra(s)"
+                [totalRecords]="totalRegistrosCompra"
+                [rowsPerPageOptions]="[4, 6, 8]"
+                (onPageChange)="onPageChangeCompra($event)"
+              ></p-paginator>
+            </div>
+          }
+        </div>
+      </p-tabpanel>
+      <p-tabpanel [value]="0">
+        <div class="flex flex-col">
+          <!-- Aba de Vendas -->
+          <div class="flex gap-4 flex-wrap pt-4 pb-4">
+            @if (operacoesVenda.length > 0) {
+              @for (operacao of operacoesVenda; track operacao.id) {
+                <p-card [style]="{ width: '45%' }" severity="danger">
+                  <ng-template #title>
+                    <section class="flex justify-between items-center">
+                      <div class="flex flex-1 items-center justify-between">
+                        <div class="flex">
+                          <p-avatar
+                            [icon]="operacao.tipo == 0 ? 'pi pi-dollar' : 'pi pi-shopping-cart'"
+                            class="mr-2"
+                            size="large"
+                            shape="circle"
+                          />
+                          <div class="flex flex-col">
+                            <span class="font-bold text-primary">Operação #{{ operacao.id }}</span>
+                            <span class="text-sm text-neutral-500"
+                              ><strong> Numero de Série: </strong
+                              >{{ operacao.produto.numeroSerie }}</span
+                            >
+                          </div>
+                        </div>
+                        <div class="space-x-4 flex items-center">
+                          <p-message
+                            [severity]="operacao.tipo === 0 ? 'success' : 'error'"
+                            size="small"
+                            >{{ operacao.tipo === 0 ? 'Venda' : 'Compra' }}</p-message
+                          >
+                          <p-button
+                            (click)="abrirModalCodigo(operacao)"
+                            icon="pi pi-pen-to-square"
+                            pTooltip="Editar Operação"
+                            tooltipPosition="bottom"
+                            [text]="true"
+                            severity="secondary"
+                            [rounded]="true"
+                          ></p-button>
+                        </div>
+                      </div>
+                    </section>
+                  </ng-template>
+                  <section class="flex justify-between">
+                    <div class="text-sm text-gray-700 flex-1">
+                      <p><strong>Cliente: </strong> {{ operacao.pessoa.nome }}</p>
+                      <p class="text-sm text-gray-700">
+                        <strong>Funcionário: </strong>{{ operacao.funcionario.nome }}
+                      </p>
+                    </div>
+                    <div
+                      class="text-sm text-gray-700 flex-1 border-l-neutral-300 ps-2 items-end flex flex-col border-l-2"
+                    >
+                      <p>
+                        <strong>Data da Transação: </strong>{{ operacao.dataHoraTransacao | date }}
+                      </p>
+                      <p [ngClass]="operacao.tipo === 0 ? 'text-green-600' : 'text-red-600'">
+                        <strong>Valor: </strong>{{ operacao.valor | currency: 'BRL' }}
+                      </p>
+                    </div>
+                  </section>
+                </p-card>
+              }
+            } @else {
+              <p-card
+                [header]="
+                  searchText.length <= 0
+                    ? 'Não há operações cadastradas!'
+                    : 'Não foram encontradas operações de venda'
+                "
+                class="w-full"
+              >
+                <p class="m-0">
+                  {{
+                    searchText.length <= 0
+                      ? 'Comece a adicionar operações de venda no sistema para vê-las aqui!'
+                      : 'Modifique seus parâmetros de busca e tente novamente!'
+                  }}
+                </p>
+              </p-card>
+            }
+          </div>
+          @if (operacoesVenda.length > 0) {
+            <div class="flex justify-center pt-4">
+              <p-paginator
+                [rows]="itensPorPaginaVenda"
+                [showCurrentPageReport]="true"
+                currentPageReportTemplate="{totalRecords} venda(s)"
+                [totalRecords]="totalRegistrosVenda"
+                [rowsPerPageOptions]="[4, 6, 8]"
+                (onPageChange)="onPageChangeVenda($event)"
+              ></p-paginator>
+            </div>
+          }
+        </div>
+      </p-tabpanel>
+      <p-tabpanel [value]="2">
+        <!-- Aba do Formulario de Adicionar -->
+        <app-formulario-operacao (fecharAba)="fecharAba(1, $event)"></app-formulario-operacao>
+      </p-tabpanel>
+      @for (operacaoEdit of operacoesEdicao; track operacaoEdit.id; let index = $index) {
+        <p-tabpanel [value]="index + 3">
+          <app-formulario-operacao
+            [operacaoEdicao]="operacaoEdit"
+            (fecharAba)="fecharAba(index, $event)"
+          ></app-formulario-operacao>
+        </p-tabpanel>
+      }
+    </p-tabpanels>
+  </p-tabs>
+  <p-dialog
+    header="Confirmar identidade"
+    (onHide)="escondeuModalCodigo(codigoForm)"
+    [modal]="true"
+    [(visible)]="modalCodigoAberto"
+    [style]="{ width: '25rem' }"
+  >
+    <h2 class="text-lg mb-4 text-neutral-500 text-center">Digite seu código de funcionário:</h2>
+    <form
+      #codigoForm="ngForm"
+      class="flex flex-col w-full items-center space-y-4"
+      (ngSubmit)="enviarCodigoForm(codigoForm)"
+    >
+      <p-inputotp
+        ngModel
+        #otpInputCodigo="ngModel"
+        name="codigo"
+        required
+        [minlength]="4"
+        [integerOnly]="true"
+        [invalid]="otpInputCodigo.invalid && (otpInputCodigo.touched || codigoForm.submitted)"
+      />
+      @if (otpInputCodigo.invalid && (otpInputCodigo.touched || codigoForm.submitted)) {
+        <p-message severity="error" size="small" variant="simple">Passcode is required.</p-message>
+      }
+      <button class="w-36" pButton severity="primary" type="submit" [disabled]="codigoForm.invalid">
+        Confirmar
+      </button>
+    </form>
+  </p-dialog>
+</main>

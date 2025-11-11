@@ -1,0 +1,131 @@
+<p-toast />
+<main>
+  <!-- Abas -->
+  <p-tabs [(value)]="abaAtual">
+    <p-tablist>
+      <p-tab [value]="0">Inventário</p-tab>
+      <p-tab [value]="1">Adicionar</p-tab>
+      @for (item of produtosEdicao; track item.numeroSerie; let index = $index) {
+        <p-tab [value]="index + 2"
+          >{{ item.numeroSerie }}
+          <p-button
+            icon="pi pi-times"
+            severity="danger"
+            [text]="true"
+            [style]="{
+              width: '0.5rem',
+              height: '0.5rem',
+              padding: '0.6rem',
+              marginLeft: '0.5rem',
+            }"
+            (click)="fecharAba(index)"
+        /></p-tab>
+      }
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel [value]="0">
+        <!-- Aba do Inventário -->
+        <!-- Top Bar -->
+        <p-toolbar [style]="{ marginBottom: '1rem' }">
+          <ng-template #start>
+            <section class="flex space-x-4">
+              <p-iconfield iconPosition="left">
+                <p-inputicon class="pi pi-search" />
+                <input [(ngModel)]="searchText" type="text" pInputText class="w-96" />
+              </p-iconfield>
+              <p-button
+                [outlined]="true"
+                severity="secondary"
+                [rounded]="true"
+                label="Pesquisar"
+                (click)="carregarProdutos(paginaAtual)"
+              ></p-button>
+              @if (searchText.length > 0) {
+                <p-button
+                  [outlined]="true"
+                  [rounded]="true"
+                  severity="secondary"
+                  label="Limpar Busca"
+                  icon="pi pi-times-circle"
+                  (click)="onLimparBusca()"
+                ></p-button>
+              }
+            </section>
+          </ng-template>
+          <ng-template #end>
+            <p-button
+              (click)="irParaAdicionar()"
+              label="Adicionar"
+              icon="pi pi-plus"
+              iconPos="right"
+            ></p-button>
+          </ng-template>
+        </p-toolbar>
+        @if (produtos.length > 0) {
+          <p-table
+            [value]="produtos"
+            [scrollable]="true"
+            scrollHeight="385px"
+            stripedRows
+            showGridlines
+            [paginator]="true"
+            (onLazyLoad)="pageChange($event)"
+            [totalRecords]="totalProdutos"
+            [rowsPerPageOptions]="[5, 10]"
+            [rows]="qntdProdutosTabela"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="{totalRecords} produtos"
+            [lazy]="true"
+          >
+            <ng-template #header>
+              <tr>
+                <th>Nº de Série</th>
+                <th>Aparelho</th>
+                <th>Modelo</th>
+                <th>Status</th>
+                <th class="text-center flex justify-center items-center">Ações</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-item>
+              <tr>
+                <td>{{ item.numeroSerie }}</td>
+                <td>{{ item.aparelho }}</td>
+                <td>{{ item.modelo }}</td>
+                <td>{{ item.status.nome }}</td>
+                <td class="flex justify-center items-center">
+                  <p-button icon="pi pi-pen-to-square" (click)="onEditarProduto(item)"></p-button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        } @else {
+          <p-card header="Não há produtos no inventário!">
+            <p class="m-0">
+              Começe a adicionar itens no inventário e/ou realizar operações que adicionem produtos
+              no inventário para vê-los aqui!
+            </p>
+          </p-card>
+        }
+      </p-tabpanel>
+      <p-tabpanel [value]="1">
+        <!-- Aba do Componente do form -->
+        <!-- <p class="m-0">Componente da página do formulário vai estar aqui</p> -->
+        <div class="flex">
+          <app-formulario-estoque
+            [opcoesStatus]="opcoesStatus"
+            (fecharAba)="fecharAba(-1, $event)"
+          ></app-formulario-estoque>
+        </div>
+      </p-tabpanel>
+      @for (item of produtosEdicao; track item.numeroSerie; let index = $index) {
+        <p-tabpanel [value]="index + 2">
+          <app-formulario-estoque
+            [opcoesStatus]="opcoesStatus"
+            (fecharAba)="fecharAba(index, $event)"
+            [itemEdicao]="item"
+          ></app-formulario-estoque>
+        </p-tabpanel>
+      }
+    </p-tabpanels>
+  </p-tabs>
+</main>

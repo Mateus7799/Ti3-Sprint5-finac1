@@ -1,0 +1,340 @@
+<p-toast />
+<form
+  class="flex flex-col gap-4"
+  #operacaoForm="ngForm"
+  (ngSubmit)="enviarFormulario(operacaoForm)"
+>
+  <p-fieldset legend="Informações sobre a operação">
+    <div class="flex gap-4 py-2">
+      <!-- Valor -->
+      <p-iftalabel>
+        <p-iconfield>
+          <p-inputicon class="pi pi-dollar" />
+          <p-inputnumber
+            [ngModel]="operacaoEdicao?.valor"
+            mode="currency"
+            required
+            name="valor"
+            currency="BRL"
+            locale="pt-BR"
+            inputId="valor"
+            [min]="0"
+            inputStyleClass="w-56"
+          ></p-inputnumber>
+        </p-iconfield>
+        <label for="valor">Valor da Operação</label>
+      </p-iftalabel>
+      <!-- Valor Abatido [APENAS EM TROCAS] -->
+      @if (estouTrocando) {
+        <p-iftalabel>
+          <p-iconfield>
+            <p-inputicon class="pi pi-dollar" />
+            <p-inputnumber
+              [ngModel]="operacaoEdicao?.troca?.valorAbatido"
+              mode="currency"
+              required
+              name="valorAbatido"
+              currency="BRL"
+              locale="pt-BR"
+              inputId="valorAbatido"
+              [min]="0"
+              inputStyleClass="w-56"
+            ></p-inputnumber>
+          </p-iconfield>
+          <label for="valor">Valor a ser Abatido</label>
+        </p-iftalabel>
+      }
+      <!-- Forma de Pagamento -->
+      <p-iftalabel>
+        <p-select
+          [(ngModel)]="formaPagamentoSelecionada"
+          required
+          [options]="formasPagamento"
+          optionLabel="nome"
+          optionValue="id"
+          name="formaPagamento"
+          [showClear]="true"
+          class="min-w-56"
+          dropdownIcon="pi pi-wallet"
+          inputId="formaPagamento"
+        ></p-select>
+        <label for="formaPagamento">Forma de Pagamento</label>
+      </p-iftalabel>
+      <!-- Tipo de Operação -->
+      <p-iftalabel>
+        <p-select
+          [(ngModel)]="tipoOperacaoSelecionado"
+          required
+          [options]="opcoesTipoOperacao"
+          optionLabel="label"
+          optionValue="value"
+          name="tipo"
+          [showClear]="true"
+          class="min-w-56"
+          inputId="tipo"
+        ></p-select>
+        <label for="tipo">Tipo de Operação</label>
+      </p-iftalabel>
+    </div>
+    <div class="flex gap-4 py-2">
+      <!-- Funcionario -->
+      <p-iftalabel>
+        <p-autocomplete
+          [ngModel]="operacaoEdicao?.funcionario"
+          name="funcionario"
+          optionLabel="nome"
+          inputStyleClass="w-56"
+          [delay]="500"
+          [disabled]="!!operacaoEdicao"
+          [suggestions]="funcionariosDisponiveis"
+          [forceSelection]="true"
+          (completeMethod)="queryFuncionarios($event)"
+          inputId="funcionario"
+          placeholder="Digite para procurar..."
+          required
+        ></p-autocomplete>
+        <label for="funcionario">Funcionário Responsável</label>
+      </p-iftalabel>
+      <!-- Pessoa -->
+      <p-iftalabel>
+        <p-autocomplete
+          [ngModel]="operacaoEdicao?.pessoa"
+          [disabled]="!!operacaoEdicao"
+          [delay]="500"
+          name="pessoa"
+          optionLabel="nome"
+          [suggestions]="pessoasDisponiveis"
+          [forceSelection]="true"
+          (completeMethod)="queryPessoas($event)"
+          inputStyleClass="w-56"
+          required
+          inputId="pessoa"
+          placeholder="Digite para procurar..."
+        ></p-autocomplete>
+        <label for="funcionario">Pessoa relacionada</label>
+      </p-iftalabel>
+    </div>
+    <div class="flex gap-4 py-2">
+      <!-- Produto -->
+      <p-iftalabel>
+        <p-autocomplete
+          #produtoInput
+          [ngModel]="operacaoEdicao?.produto"
+          name="produto"
+          [optionLabel]="getLabelForProduto"
+          [suggestions]="produtosDisponiveis"
+          required
+          [forceSelection]="true"
+          (completeMethod)="queryProdutos($event)"
+          [disabled]="cadastrarNovoProduto || !!operacaoEdicao"
+          inputId="produto"
+          [delay]="500"
+          placeholder="Digite para procurar..."
+          [inputStyle]="{ width: '30rem' }"
+        ></p-autocomplete>
+        <label for="produto">{{ estouTrocando ? 'Produto Vendido' : 'Produto' }}</label>
+      </p-iftalabel>
+      @if (estouTrocando) {
+        <!-- Produto Recebido -->
+        <p-iftalabel>
+          <p-autocomplete
+            [ngModel]="operacaoEdicao?.troca?.produtoRecebido"
+            #produtoRecebidoInput
+            name="produtoRecebido"
+            [optionLabel]="getLabelForProduto"
+            [suggestions]="produtosDisponiveis"
+            required
+            [forceSelection]="true"
+            (completeMethod)="queryProdutos($event)"
+            [disabled]="cadastrarNovoProdutoRecebido || !!operacaoEdicao"
+            inputId="produtoRecebido"
+            [delay]="500"
+            placeholder="Digite para procurar..."
+            [inputStyle]="{ width: '30rem' }"
+          ></p-autocomplete>
+          <label for="produtoRecebido">Produto Recebido</label>
+        </p-iftalabel>
+      }
+    </div>
+    @if (!estouTrocando) {
+      <div class="flex gap-4 py-2">
+        <!-- Observacoes -->
+        <p-floatlabel variant="on" class="w-3/4">
+          <textarea
+            rows="3"
+            class="w-full"
+            name="observacoes"
+            [ngModel]="operacaoEdicao?.observacoes"
+            style="resize: none"
+            pTextarea
+          ></textarea>
+          <label for="observacoes">Digite observações aqui...</label>
+        </p-floatlabel>
+      </div>
+    }
+    @if (!operacaoEdicao) {
+      <div class="flex gap-4 items-center py-2">
+        <p-togglebutton
+          [(ngModel)]="cadastrarNovoProduto"
+          onLabel="Cadastrando novo produto a ser vendido..."
+          [ngModelOptions]="{ standalone: true }"
+          [offLabel]="estouTrocando ? 'Não encontrei o produto vendido' : 'Não encontrei o produto'"
+          offIcon="pi pi-exclamation-triangle"
+          onIcon="pi pi-file-plus"
+        ></p-togglebutton>
+        @if (estouTrocando) {
+          <p-togglebutton
+            [(ngModel)]="cadastrarNovoProdutoRecebido"
+            onLabel="Cadastrando novo produto a ser recebido..."
+            [ngModelOptions]="{ standalone: true }"
+            offLabel="Não encontrei o produto recebido"
+            offIcon="pi pi-exclamation-triangle"
+            onIcon="pi pi-file-plus"
+          ></p-togglebutton>
+        }
+      </div>
+      @if (cadastrarNovoProduto || (cadastrarNovoProdutoRecebido && estouTrocando)) {
+        <div class="pt-2">
+          <p-message severity="secondary" icon="pi pi-info-circle">{{
+            estouTrocando
+              ? 'Esse(s) produto(s) serão relacionado(s) a essa operação automaticamente'
+              : 'Esse produto será relacionado a essa operação automaticamente'
+          }}</p-message>
+        </div>
+      }
+    }
+  </p-fieldset>
+  @if (cadastrarNovoProduto) {
+    <p-fieldset [legend]="estouTrocando ? 'Novo Produto a ser Vendido' : 'Novo Produto'">
+      <div class="flex gap-4 pb-4">
+        <!-- Número de série -->
+        <p-iftalabel>
+          <input
+            placeholder="..."
+            type="text"
+            pInputText
+            [(ngModel)]="produtoInput.value"
+            name="numeroSerieProduto"
+            required
+            class="w-72"
+          />
+          <label for="numeroSerieProduto">Número de Série</label>
+        </p-iftalabel>
+        <!-- Aparelho -->
+        <p-iftalabel>
+          <input placeholder="..." type="text" pInputText ngModel name="aparelhoProduto" required />
+          <label for="aparelhoProduto">Aparelho</label>
+        </p-iftalabel>
+
+        <!-- Cor -->
+        <p-iftalabel>
+          <input placeholder="..." type="text" pInputText ngModel name="corProduto" required />
+          <label for="corProduto">Cor</label>
+        </p-iftalabel>
+      </div>
+      <div class="flex flex-col gap-4">
+        <!-- Modelo -->
+        <p-iftalabel>
+          <input
+            placeholder="..."
+            type="text"
+            class="w-1/2"
+            pInputText
+            ngModel
+            name="modeloProduto"
+            required
+          />
+          <label for="modeloProduto">Modelo</label>
+        </p-iftalabel>
+        <!-- Observacoes -->
+        <p-floatlabel variant="on">
+          <textarea
+            rows="3"
+            name="observacoesProduto"
+            ngModel
+            style="resize: none"
+            class="w-3/4"
+            pTextarea
+          ></textarea>
+          <label for="observacoesProduto">Digite observações sobre o produto aqui...</label>
+        </p-floatlabel>
+      </div>
+    </p-fieldset>
+  }
+  @if (cadastrarNovoProdutoRecebido && estouTrocando) {
+    <p-fieldset legend="Novo produto a ser Recebido">
+      <div class="flex gap-4 pb-4">
+        <!-- Número de série -->
+        <p-iftalabel>
+          <input
+            placeholder="..."
+            type="text"
+            pInputText
+            name="numeroSerieProdutoRecebido"
+            ngModel
+            required
+            class="w-72"
+          />
+          <label for="numeroSerieProdutoRecebido">Número de Série</label>
+        </p-iftalabel>
+        <!-- Aparelho -->
+        <p-iftalabel>
+          <input
+            placeholder="..."
+            type="text"
+            pInputText
+            ngModel
+            name="aparelhoProdutoRecebido"
+            required
+          />
+          <label for="aparelhoProdutoRecebido">Aparelho</label>
+        </p-iftalabel>
+
+        <!-- Cor -->
+        <p-iftalabel>
+          <input
+            placeholder="..."
+            type="text"
+            pInputText
+            ngModel
+            name="corProdutoRecebido"
+            required
+          />
+          <label for="corProdutoRecebido">Cor</label>
+        </p-iftalabel>
+      </div>
+      <div class="flex flex-col gap-4">
+        <!-- Modelo -->
+        <p-iftalabel>
+          <input
+            placeholder="..."
+            type="text"
+            class="w-1/2"
+            pInputText
+            ngModel
+            name="modeloProdutoRecebido"
+            required
+          />
+          <label for="modeloProdutoRecebido">Modelo</label>
+        </p-iftalabel>
+        <!-- Observacoes -->
+        <p-floatlabel variant="on">
+          <textarea
+            rows="3"
+            name="observacoesProdutoRecebido"
+            ngModel
+            style="resize: none"
+            class="w-3/4"
+            pTextarea
+          ></textarea>
+          <label for="observacoesProdutoRecebido">Digite observações sobre o produto aqui...</label>
+        </p-floatlabel>
+      </div>
+    </p-fieldset>
+  }
+  <p-button
+    [disabled]="operacaoForm.invalid"
+    [label]="!!operacaoEdicao ? 'Salvar Alterações' : 'Registrar Operação'"
+    type="submit"
+  ></p-button>
+</form>

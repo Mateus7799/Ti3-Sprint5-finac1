@@ -1,0 +1,4 @@
+CREATE TABLE MetodosPagamento (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL
+);

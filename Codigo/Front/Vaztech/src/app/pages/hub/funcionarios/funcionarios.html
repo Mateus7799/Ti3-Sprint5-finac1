@@ -1,0 +1,197 @@
+<p-toast />
+<main>
+  <p-toolbar>
+    <ng-template #start></ng-template>
+    <ng-template #end>
+      <p-button
+        label="Cadastrar Funcionário"
+        icon="pi pi-plus"
+        (click)="abrirModalCadastrarFuncionario()"
+      ></p-button>
+    </ng-template>
+  </p-toolbar>
+  <div class="flex gap-4 flex-wrap pt-4 overflow-y-auto grow max-h-[calc(100dvh-200px)]">
+    @for (funcionario of funcionarios; track funcionario.id) {
+      <p-card [style]="{ width: '25rem', overflow: 'hidden' }">
+        <ng-template #title>
+          <section class="flex justify-between items-center">
+            <div class="flex items-center">
+              <p-avatar icon="pi pi-address-book" class="mr-2" size="large" shape="circle" />
+              <span class="font-bold text-primary"
+                >{{ funcionario.nome.split(' ')[0] }}
+                {{ funcionario.nome.split(' ')[funcionario.nome.split(' ').length - 1] }}</span
+              >
+            </div>
+            <p-button
+              icon="pi pi-pen-to-square"
+              [text]="true"
+              severity="secondary"
+              [rounded]="true"
+              (click)="abrirModalEditarFuncionario(funcionario)"
+            ></p-button>
+          </section>
+        </ng-template>
+        <div>
+          <p><strong>Data de Nascimento:</strong> {{ funcionario.dataNascimento | date }}</p>
+          <p><strong>CPF:</strong> {{ funcionario.cpf | cpf }}</p>
+        </div>
+        <ng-template #footer>
+          <div class="flex gap-4 mt-1">
+            <p-button
+              label="Ver histórico"
+              icon="pi pi-history"
+              severity="secondary"
+              class="w-full"
+              [outlined]="true"
+              styleClass="w-full"
+            />
+            <p-button
+              label="Mudar Código"
+              icon="pi pi-wrench"
+              class="w-full"
+              styleClass="w-full"
+              (click)="abrirModalMudarCodigo(funcionario.id)"
+            />
+          </div>
+        </ng-template>
+      </p-card>
+    }
+  </div>
+  <!-- Formulário de Cadastro -->
+  <p-dialog
+    [header]="editandoFuncionario ? 'Editar dados pessoais' : 'Cadastrar Novo Funcionário'"
+    (onHide)="esconderFormularioFuncionarioModal(funcionarioForm)"
+    [modal]="true"
+    [(visible)]="modalFormularioFuncionarioAberto"
+    [draggable]="false"
+    [style]="{ width: '35rem' }"
+  >
+    <form
+      #funcionarioForm="ngForm"
+      class="flex flex-col w-full items-center space-y-4"
+      (ngSubmit)="enviarFuncionarioForm(funcionarioForm)"
+    >
+      <p-fieldset legend="Dados Pessoais">
+        <div class="pb-2 w-full">
+          <p-iconfield>
+            <p-inputicon class="pi pi-user"></p-inputicon>
+            <input
+              [ngModel]="editandoFuncionario?.nome"
+              required
+              name="nome"
+              fluid
+              type="text"
+              placeholder="Nome completo..."
+              pInputText
+            />
+          </p-iconfield>
+        </div>
+        <div class="w-full flex gap-2">
+          <p-iconfield>
+            <p-inputicon class="pi pi-id-card"></p-inputicon>
+            <p-inputmask
+              [ngModel]="editandoFuncionario?.cpf"
+              required
+              name="cpf"
+              mask="999.999.999-99"
+              [unmask]="true"
+              placeholder="CPF..."
+            />
+          </p-iconfield>
+          <p-datepicker
+            placeholder="Data de Nascimento"
+            name="dataNascimento"
+            [ngModel]="editandoFuncionario?.dataNascimento"
+            required
+            [showIcon]="true"
+            appendTo="body"
+          ></p-datepicker>
+        </div>
+      </p-fieldset>
+      @if (!editandoFuncionario) {
+        <p-fieldset legend="Código de Funcionário">
+          <div class="w-full justify-center items-center">
+            <p-inputotp ngModel name="codFuncionario" [minlength]="4" required></p-inputotp>
+          </div>
+        </p-fieldset>
+      }
+      <div class="flex flex-col space-y-1 pt-2">
+        <p class="text-md text-neutral-500 text-center">
+          Esse funcionário não poderá ser excluído do sistema!
+        </p>
+        <div class="gap-2 flex items-center justify-center">
+          <p-checkbox
+            [(ngModel)]="entendi"
+            inputId="entendi"
+            name="entendi"
+            required
+            [binary]="true"
+          ></p-checkbox>
+          <label for="entendi" class="font-bold">Entendi</label>
+        </div>
+      </div>
+      <button
+        class="w-36"
+        pButton
+        severity="primary"
+        type="submit"
+        [disabled]="funcionarioForm.invalid || !entendi"
+      >
+        {{ editandoFuncionario ? 'Salvar Edições' : 'Cadastrar' }}
+      </button>
+    </form>
+  </p-dialog>
+  <!-- Formulário de mudar código -->
+  <p-dialog
+    header="Mudar Código"
+    (onHide)="esconderMudarCodigoModal(mudarCodigoForm)"
+    [draggable]="false"
+    [modal]="true"
+    [(visible)]="modalMudarCodigoAberto"
+    [style]="{ width: '25rem' }"
+  >
+    <h2 class="text-lg mb-4 text-neutral-500 text-center">Digite o novo código:</h2>
+    <form
+      #mudarCodigoForm="ngForm"
+      class="flex flex-col w-full items-center space-y-4"
+      (ngSubmit)="enviarMudarCodigoForm(mudarCodigoForm)"
+    >
+      <p-inputotp
+        ngModel
+        #otpInputCodigo="ngModel"
+        name="codigo"
+        required
+        [minlength]="4"
+        [integerOnly]="true"
+        [invalid]="otpInputCodigo.invalid && (otpInputCodigo.touched || mudarCodigoForm.submitted)"
+      />
+      @if (otpInputCodigo.invalid && (otpInputCodigo.touched || mudarCodigoForm.submitted)) {
+        <p-message severity="error" size="small" variant="simple"
+          >Código novo é obrigatório.</p-message
+        >
+      }
+      <div class="flex flex-col space-y-1">
+        <p class="text-md text-neutral-500 text-center">Essa ação não pode ser desfeita!</p>
+        <div class="gap-2 flex items-center justify-center">
+          <p-checkbox
+            ngModel
+            inputId="entendi"
+            name="entendi"
+            required
+            [binary]="true"
+          ></p-checkbox>
+          <label for="entendi" class="font-bold">Entendi</label>
+        </div>
+      </div>
+      <button
+        class="w-36"
+        pButton
+        severity="primary"
+        type="submit"
+        [disabled]="mudarCodigoForm.invalid"
+      >
+        Mudar
+      </button>
+    </form>
+  </p-dialog>
+</main>

@@ -1,0 +1,198 @@
+<p-toast />
+<main>
+  <p-toolbar>
+    <ng-template #start>
+      <section class="flex space-x-4">
+        <p-iconfield iconPosition="left">
+          <p-inputicon class="pi pi-search" />
+          <input [(ngModel)]="searchText" type="text" pInputText class="w-96" />
+        </p-iconfield>
+        <p-button
+          [outlined]="true"
+          [rounded]="true"
+          severity="secondary"
+          label="Pesquisar"
+          (click)="buscarPessoas()"
+        ></p-button>
+        @if (searchText.length > 0) {
+          <p-button
+            [outlined]="true"
+            [rounded]="true"
+            severity="secondary"
+            label="Limpar Busca"
+            icon="pi pi-times-circle"
+            (click)="listarPessoas()"
+          ></p-button>
+        }
+      </section>
+    </ng-template>
+    <ng-template #end>
+      <p-button
+        label="Cadastrar Pessoa"
+        icon="pi pi-plus"
+        (click)="abrirModalCadastrar()"
+      ></p-button>
+    </ng-template>
+  </p-toolbar>
+  <div>
+    <h1 class="text-lg text-neutral-400 pt-4 font-semibold">
+      Essa página inclui os clientes e fornecedores
+    </h1>
+  </div>
+  <!-- <p-scrollpanel [style]="{ width: '100%', height: '300px', display: 'flex', gap:'0.25rem', flexWrap: 'wrap', paddingTop: '0.25rem', paddingBottom: '0,25rem'}"> -->
+  <div class="flex gap-4 flex-wrap pt-4 pb-4">
+    @if (pessoas.length > 0) {
+      @for (pessoa of pessoas; track pessoa.id) {
+        <p-card [style]="{ width: '45%' }">
+          <ng-template #title>
+            <section class="flex justify-between items-center">
+              <div class="flex items-center">
+                <p-avatar
+                  [icon]="pessoa.cpfCnpj.length == 11 ? 'pi pi-user' : 'pi pi-building'"
+                  class="mr-2"
+                  size="large"
+                  shape="circle"
+                />
+                <span class="font-bold text-primary">{{ pessoa.nome }}</span>
+              </div>
+              <p-button
+                icon="pi pi-pen-to-square"
+                [text]="true"
+                severity="secondary"
+                [rounded]="true"
+                (click)="abrirModalEditar(pessoa)"
+              ></p-button>
+            </section>
+          </ng-template>
+          <ng-template #subtitle>
+            <span class="text-sm text-gray-600">{{ pessoa.origem || 'Sem origem definida' }}</span>
+          </ng-template>
+          <div class="space-y-2">
+            <p>
+              <strong>{{ pessoa.cpfCnpj.length == 11 ? 'CPF' : 'CNPJ' }}:</strong>
+              {{ pessoa.cpfCnpj | cpfCnpjMask }}
+            </p>
+            @if (pessoa.dataNascimento) {
+              <p class="text-sm text-gray-700">
+                <strong>Data de Nascimento:</strong>
+                {{ pessoa.dataNascimento | date: 'dd/MM/yyyy' }}
+              </p>
+            }
+          </div>
+        </p-card>
+      }
+    } @else {
+      <p-card
+        [header]="
+          searchText.length <= 0 ? 'Não há pessoas cadastradas!' : 'Não foram encontradas pessoas'
+        "
+        class="w-full"
+      >
+        <p class="m-0">
+          {{
+            searchText.length <= 0
+              ? 'Comece a adicionar pessoas no sistema para vê-las aqui!'
+              : 'Modifique seus parâmetros de busca e tente novamente!'
+          }}
+        </p>
+      </p-card>
+    }
+  </div>
+
+  @if (pessoas.length > 0) {
+    <div class="flex justify-center pt-4">
+      <p-paginator
+        [rows]="itensPorPagina"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{totalRecords} pessoas"
+        [totalRecords]="totalRegistros"
+        [rowsPerPageOptions]="[4, 6, 8]"
+        (onPageChange)="onPageChange($event)"
+      ></p-paginator>
+    </div>
+  }
+
+  <p-dialog
+    [header]="editandoPessoa ? 'Editar Pessoa' : 'Cadastrar Nova Pessoa'"
+    (onHide)="esconderFormularioModal(pessoaForm)"
+    [modal]="true"
+    [(visible)]="modalFormularioAberto"
+    [draggable]="false"
+    [style]="{ width: '35rem' }"
+  >
+    <form
+      #pessoaForm="ngForm"
+      class="flex flex-col w-full space-y-4"
+      (ngSubmit)="enviarFormulario(pessoaForm)"
+    >
+      <div class="flex flex-col space-y-2">
+        <label for="nome" class="font-semibold">Nome *</label>
+        <input
+          [ngModel]="editandoPessoa?.nome"
+          required
+          name="nome"
+          id="nome"
+          type="text"
+          placeholder="Nome completo..."
+          pInputText
+        />
+      </div>
+
+      <div class="flex flex-col space-y-2">
+        <label for="cpfCnpj" class="font-semibold">CPF/CNPJ *</label>
+        <input
+          [ngModel]="editandoPessoa?.cpfCnpj ? (editandoPessoa!.cpfCnpj | cpfCnpjMask) : ''"
+          required
+          #cpfCnpjInput
+          name="cpfCnpj"
+          id="cpfCnpj"
+          type="text"
+          placeholder="000.000.000-00 ou 00.000.000/0001-00"
+          pInputText
+          appCpfCnpjMask
+          maxlength="18"
+        />
+      </div>
+
+      @if (cpfCnpjInput.value.length < 15) {
+        <div class="flex flex-col space-y-2">
+          <label for="dataNascimento" class="font-semibold">Data de Nascimento *</label>
+          <p-datepicker
+            placeholder="Data de Nascimento"
+            name="dataNascimento"
+            [ngModel]="editandoPessoa?.dataNascimento"
+            required
+            [showIcon]="true"
+            appendTo="body"
+          ></p-datepicker>
+        </div>
+      }
+
+      <div class="flex flex-col space-y-2">
+        <label for="origem" class="font-semibold">Origem</label>
+        <input
+          [ngModel]="editandoPessoa?.origem"
+          name="origem"
+          id="origem"
+          type="text"
+          placeholder="Origem..."
+          pInputText
+        />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-4">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (click)="modalFormularioAberto = false; esconderFormularioModal(pessoaForm)"
+        ></p-button>
+        <p-button
+          [label]="editandoPessoa ? 'Salvar Edições' : 'Cadastrar'"
+          type="submit"
+          [disabled]="pessoaForm.invalid"
+        ></p-button>
+      </div>
+    </form>
+  </p-dialog>
+</main>

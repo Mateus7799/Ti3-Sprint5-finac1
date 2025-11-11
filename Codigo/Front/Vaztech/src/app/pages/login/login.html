@@ -1,0 +1,31 @@
+<main class="flex justify-center items-center gridPattern">
+  <section class="p-4 rounded-lg bg-slate-200">
+    <form
+      #form="ngForm"
+      class="p-2 space-y-4 flex flex-col justify-center items-center"
+      (ngSubmit)="onSubmit(form)"
+    >
+      <h1 class="text-primary font-bold text-3xl">Vaztech</h1>
+      <p-select
+        [options]="opcoesPerfil"
+        ngModel
+        optionLabel="perfil"
+        optionValue="value"
+        placeholder="Selecione o perfil"
+        name="perfil"
+        class="w-full"
+        required
+      />
+      <p-password
+        ngModel
+        required
+        name="senha"
+        inputId="senha"
+        [feedback]="false"
+        [toggleMask]="true"
+        placeholder="Senha..."
+      ></p-password>
+      <p-button [disabled]="form.invalid" type="submit" class="botao">Entrar</p-button>
+    </form>
+  </section>
+</main>

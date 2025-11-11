@@ -1,0 +1,46 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+@plugin 'tailwindcss-primeui';
+@import 'primeicons/primeicons.css';
+
+body {
+  height: 100vh;
+  background-color: color-mix(in srgb, var(--p-primary-100), transparent 65%);
+}
+
+main {
+  height: 100%;
+  width: 100%;
+}
+
+.gridPattern {
+  background-image:
+    linear-gradient(
+      color-mix(in srgb, var(--p-primary-color), transparent 85%) 0.8px,
+      transparent 0.8px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--p-primary-color), transparent 85%) 0.8px,
+      transparent 0.8px
+    ),
+    linear-gradient(
+      color-mix(in srgb, var(--p-primary-color), transparent 85%) 0.4px,
+      transparent 0.4px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--p-primary-color), transparent 85%) 0.4px,
+      transparent 0.4px
+    );
+  background-size:
+    20px 20px,
+    20px 20px,
+    4px 4px,
+    4px 4px;
+  background-position:
+    -0.8px -0.8px,
+    -0.8px -0.8px,
+    -0.4px -0.4px,
+    -0.4px -0.4px;
+}

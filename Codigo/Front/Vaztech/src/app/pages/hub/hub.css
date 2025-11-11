@@ -1,0 +1,4 @@
+.appMenu {
+  --p-menu-item-focus-color: var(--p-primary-color);
+  --p-menu-item-icon-focus-color: var(--p-primary-color);
+}
