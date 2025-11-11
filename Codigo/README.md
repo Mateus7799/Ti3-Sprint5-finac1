@@ -1,3 +1,3 @@
-# Código do Projeto
+# Código de teste do Projeto de TI3 Sprint 5
 
-Mantenha neste diretório todo o código do projeto. Se necessário, descreva neste arquivo aspectos relevantes da estrutura de diretórios criada para organização do código.
+Este repositório será usado com o intuito para teste do codigo da sprint 5 de ti3 para evitar possiveis erros/crashs antes de adicionar novas funcionalidades no repositorio oficial do trabalho.
