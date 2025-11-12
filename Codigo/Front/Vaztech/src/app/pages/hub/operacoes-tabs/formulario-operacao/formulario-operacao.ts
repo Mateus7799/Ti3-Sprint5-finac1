@@ -1,3 +1,4 @@
+/*
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { FieldsetModule } from 'primeng/fieldset';
@@ -131,7 +132,7 @@ export class FormularioOperacao implements OnInit {
     let toastObj;
     let novaOperacao: AdicionarOperacaoDTO = {
       valor: form.value.valor,
-      formaPagamento: form.value.formaPagamento,
+      metodoPagamento: form.value.formaPagamento,
       idPessoa: form.value.pessoa.id,
       idFuncionario: form.value.funcionario.id,
       observacoes: form.value.observacoes,
@@ -205,7 +206,8 @@ export class FormularioOperacao implements OnInit {
     let toastObj;
     let novaOperacao: AdicionarOperacaoTrocaDTO = {
       valor: form.value.valor,
-      formaPagamento: form.value.formaPagamento,
+      valorAbatido: form.value.valorAbatido,
+      metodoPagamento: form.value.formaPagamento,
       idPessoa: form.value.pessoa.id,
       idFuncionario: form.value.funcionario.id,
       numeroSerieProdutoVendido: this.cadastrarNovoProduto ? null : form.value.produto.numeroSerie,
@@ -298,3 +300,4 @@ export class FormularioOperacao implements OnInit {
     return this.tipoOperacaoSelecionado === 2;
   }
 }
+*/

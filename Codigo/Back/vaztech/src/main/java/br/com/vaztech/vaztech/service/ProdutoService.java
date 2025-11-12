@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class ProdutoService {
                 .toList();
     }
 
+    @Transactional
     public ProdutoResponseDTO produtoAdd(ProdutoAddRequestDTO dto) throws ResponseStatusException {
         try {
             if (produtoRepository.existsByNumeroSerie(dto.numeroSerie())) {
@@ -74,6 +76,7 @@ public class ProdutoService {
         }
     }
 
+    @Transactional
     public ProdutoResponseDTO produtoUpdate(Integer id, ProdutoUpdateRequestDTO dto) throws ResponseStatusException {
         try {
             Produto produto = produtoRepository.findById(id)

@@ -20,5 +20,7 @@ public record ServicoUpdateRequestDTO(
 
         String observacoes,
 
-        Integer idStatus
+        Integer idStatus,
+
+        Integer metodoPagamento
 ) {}

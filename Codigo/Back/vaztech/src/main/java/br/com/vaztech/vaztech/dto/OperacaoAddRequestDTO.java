@@ -20,5 +20,6 @@ public record OperacaoAddRequestDTO (
         @NotBlank(message = "Tipo da operação é obrigatória")
         Integer tipo,
         String observacoes,
-        ProdutoAddRequestDTO produto
+        ProdutoAddRequestDTO produto,
+        Integer metodoPagamento
 ) {}

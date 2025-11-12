@@ -11,7 +11,7 @@ import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
 import { Operacao, OperacoesReq } from '../../../models/operacao.model';
 import { TabsModule } from 'primeng/tabs';
-import { FormularioOperacao } from './formulario-operacao/formulario-operacao';
+//import { FormularioOperacao } from './formulario-operacao/formulario-operacao';
 import { OperacoesService } from '../../../services/operacoes.service';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -43,7 +43,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
     CardModule,
     AvatarModule,
     TabsModule,
-    FormularioOperacao,
+   // FormularioOperacao,
   ],
   templateUrl: './operacoes-tabs.html',
   styleUrl: './operacoes-tabs.css',

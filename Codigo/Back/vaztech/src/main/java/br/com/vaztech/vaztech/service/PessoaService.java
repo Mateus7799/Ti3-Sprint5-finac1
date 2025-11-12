@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class PessoaService {
                 .map(PessoaResponseDTO::new);
     }
 
+    @Transactional
     public PessoaResponseDTO criarPessoa(PessoaAddRequestDTO dto) throws ResponseStatusException {
         try {
             if(pessoaRepository.existsByCpfCnpj(dto.cpfCnpj())){
@@ -59,6 +61,7 @@ public class PessoaService {
         }
     }
 
+    @Transactional
     public PessoaResponseDTO atualizarPessoa(Integer id, PessoaUpdateRequestDTO dto) throws ResponseStatusException {
         try {
             Pessoa pessoa = pessoaRepository.findById(id)

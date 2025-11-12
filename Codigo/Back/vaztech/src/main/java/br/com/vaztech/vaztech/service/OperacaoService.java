@@ -37,6 +37,9 @@ public class OperacaoService {
     @Autowired
     MetodoPagamentoRepository metodoPagamentoRepository;
 
+    private static final Integer VENDA = 0;
+    private static final Integer COMPRA = 1;
+
     public Page<OperacaoResponseDTO> buscarOperacoesPaginadas(Integer tipo, Integer id, BigDecimal min, BigDecimal max, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, "dataHoraTransacao");
 
@@ -89,6 +92,9 @@ public class OperacaoService {
             Funcionario funcionario = funcionarioRepository.findById(dto.idFuncionario())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado com ID: " + dto.idFuncionario()));
 
+            MetodoPagamento metodoPagamento = metodoPagamentoRepository.findById(dto.metodoPagamento())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Método de pagamento não encontrado com ID: " + dto.metodoPagamento()));
+
             Operacao operacao = new Operacao();
             operacao.setProduto(produto);
             operacao.setPessoa(pessoa);
@@ -97,6 +103,7 @@ public class OperacaoService {
             operacao.setTipo(dto.tipo());
             operacao.setObservacoes(dto.observacoes());
             operacao.setDataHoraTransacao(LocalDateTime.now());
+            operacao.setMetodoPagamento(metodoPagamento);
 
             Operacao salva = operacaoRepository.save(operacao);
 
@@ -116,13 +123,13 @@ public class OperacaoService {
 
             if (produtoVendido == null) {
                 if (dto.produtoVendido() == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto não encontrado e dados do produto não foram enviados para criação automática.");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto vendido não encontrado e dados do produto não foram enviados para criação automática.");
                 }
 
                 ProdutoResponseDTO novoProdutoVendido = produtoService.produtoAdd(dto.produtoVendido());
 
                 produtoVendido = produtoRepository.findByNumeroSerie(dto.produtoVendido().numeroSerie())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao criar o produto automaticamente."));
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao criar o produto vendido automaticamente."));
             }
 
 
@@ -131,13 +138,13 @@ public class OperacaoService {
 
             if (produtoRecebido == null) {
                 if (dto.produtoRecebido() == null) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto não encontrado e dados do produto não foram enviados para criação automática.");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto recebido não encontrado e dados do produto não foram enviados para criação automática.");
                 }
 
                 ProdutoResponseDTO novoProdutoRecebido = produtoService.produtoAdd(dto.produtoRecebido());
 
                 produtoRecebido = produtoRepository.findByNumeroSerie(dto.produtoRecebido().numeroSerie())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao criar o produto automaticamente."));
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao criar o produto recebido automaticamente."));
             }
 
             Pessoa pessoa = pessoaRepository.findById(dto.idPessoa())
@@ -157,6 +164,7 @@ public class OperacaoService {
             operacaoVenda.setFuncionario(funcionario);
             operacaoVenda.setProduto(produtoVendido);
             operacaoVenda.setDataHoraTransacao(LocalDateTime.now());
+            operacaoVenda.setTipo(VENDA);
 
             Operacao operacaoCompra = new Operacao();
 
@@ -166,6 +174,7 @@ public class OperacaoService {
             operacaoCompra.setFuncionario(funcionario);
             operacaoCompra.setProduto(produtoVendido);
             operacaoCompra.setDataHoraTransacao(LocalDateTime.now());
+            operacaoCompra.setTipo(COMPRA);
 
             operacaoCompra = operacaoRepository.save(operacaoCompra);
             operacaoVenda = operacaoRepository.save(operacaoVenda);
@@ -202,7 +211,14 @@ public class OperacaoService {
                 operacao.setObservacoes(dto.observacoes());
             }
 
+            if (dto.metodoPagamento() != null) {
+                MetodoPagamento metodoPagamento = metodoPagamentoRepository.findById(dto.metodoPagamento())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Método de pagamento não encontrado com ID: " + dto.metodoPagamento()));
+                operacao.setMetodoPagamento(metodoPagamento);
+            }
+
             Operacao atualizada = operacaoRepository.save(operacao);
+
             return new OperacaoResponseDTO(atualizada);
         } catch (ResponseStatusException e) {
             throw e;

@@ -33,7 +33,7 @@ public class ServicoController {
     }
 
     @PostMapping
-    public ResponseEntity<ServicoResponseDTO> criarServico(@Valid @RequestBody ServicoAddRequestDTO dto) throws ResponseStatusException {
+    public ResponseEntity<?> criarServico(@Valid @RequestBody ServicoAddRequestDTO dto) throws ResponseStatusException {
         ServicoResponseDTO response = servicoService.criarServico(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

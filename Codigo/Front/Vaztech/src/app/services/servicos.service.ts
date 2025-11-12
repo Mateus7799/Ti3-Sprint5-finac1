@@ -1,7 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ProdutoStatus } from '../models/produto.model';
-import { Servico, ServicosReqDTO, StatusServico, TiposServico } from '../models/servico.model';
+import {
+  AdicionarServicoDTO,
+  Servico,
+  ServicosReqDTO,
+  StatusServico,
+  TiposServico,
+} from '../models/servico.model';
 import { Observable, of } from 'rxjs';
 
 @Injectable({
@@ -148,7 +154,10 @@ export class ServicosService {
     });
   }
 
-  adicionarServico(servico: Servico) {}
+  adicionarServico(servico: AdicionarServicoDTO) {
+    console.log(servico);
+    return of();
+  }
 
   concluirServico(servico: Servico) {}
 

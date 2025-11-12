@@ -23,6 +23,29 @@ export type Servico = {
   status: StatusServico;
 };
 
+export type PessoaServico = {
+  id: number;
+  nome: string;
+  cpfCnpj: string;
+};
+
+export type ProdutoServico = {
+  id: number;
+  numeroSerie: string;
+  aparelho: string;
+  modelo: string;
+};
+
+export type AdicionarServicoDTO = {
+  numeroSerieProduto: string | null;
+  valor: number;
+  idPessoa: number;
+  metodoPagamento: number;
+  tipo: TiposServico;
+  observacoes?: string;
+  produto?: Produto;
+};
+
 export type ServicosReqDTO = {
   content: Servico[];
   totalElements: number;

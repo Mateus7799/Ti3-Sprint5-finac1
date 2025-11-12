@@ -1,1 +1,190 @@
-<h1>Formulário Servicos está funcionando</h1>
+<p-toast />
+<form class="flex flex-col gap-4" #servicoForm="ngForm" (ngSubmit)="enviarFormulario(servicoForm)">
+  <p-fieldset legend="Informações sobre o Serviço">
+    <div class="flex gap-4 py-2">
+      <!-- Valor -->
+      <p-iftalabel>
+        <p-iconfield>
+          <p-inputicon class="pi pi-dollar" />
+          <p-inputnumber
+            [ngModel]="servicoEdicao?.valor"
+            mode="currency"
+            required
+            name="valor"
+            currency="BRL"
+            locale="pt-BR"
+            inputId="valor"
+            [min]="0"
+            inputStyleClass="w-56"
+          ></p-inputnumber>
+        </p-iconfield>
+        <label for="valor">Valor do Serviço</label>
+      </p-iftalabel>
+      <!-- Forma de Pagamento -->
+      <p-iftalabel>
+        <p-select
+          [(ngModel)]="formaPagamentoSelecionada"
+          required
+          [options]="formasPagamento"
+          optionLabel="nome"
+          optionValue="id"
+          name="formaPagamento"
+          [showClear]="true"
+          class="min-w-56"
+          dropdownIcon="pi pi-wallet"
+          inputId="formaPagamento"
+        ></p-select>
+        <label for="formaPagamento">Forma de Pagamento</label>
+      </p-iftalabel>
+      <!-- Tipo do Serviço -->
+      <p-iftalabel>
+        <p-select
+          [(ngModel)]="tipoServicoSelecionado"
+          required
+          [options]="opcoesTipoServico"
+          optionLabel="label"
+          optionValue="value"
+          name="tipo"
+          [showClear]="true"
+          class="min-w-56"
+          inputId="tipo"
+        ></p-select>
+        <label for="tipo">Tipo de Serviço</label>
+      </p-iftalabel>
+    </div>
+    <div class="flex gap-4 py-2">
+      <!-- Pessoa -->
+      <p-iftalabel>
+        <p-autocomplete
+          [ngModel]="servicoEdicao?.pessoa"
+          [disabled]="!!servicoEdicao"
+          [delay]="500"
+          name="pessoa"
+          optionLabel="nome"
+          [suggestions]="pessoasDisponiveis"
+          [forceSelection]="true"
+          (completeMethod)="queryPessoas($event)"
+          inputStyleClass="w-56"
+          required
+          inputId="pessoa"
+          placeholder="Digite para procurar..."
+        ></p-autocomplete>
+        <label for="pessoa">Pessoa relacionada</label>
+      </p-iftalabel>
+      <!-- Produto -->
+      <p-iftalabel>
+        <p-autocomplete
+          #produtoInput
+          [ngModel]="servicoEdicao?.produto"
+          name="produto"
+          [optionLabel]="getLabelForProduto"
+          [suggestions]="produtosDisponiveis"
+          required
+          [forceSelection]="true"
+          (completeMethod)="queryProdutos($event)"
+          [disabled]="cadastrarNovoProduto || !!servicoEdicao"
+          inputId="produto"
+          [delay]="500"
+          placeholder="Digite para procurar..."
+          [inputStyle]="{ width: '30rem' }"
+        ></p-autocomplete>
+        <label for="produto">Produto</label>
+      </p-iftalabel>
+    </div>
+    <div class="flex gap-4 py-2">
+      <!-- Observacoes -->
+      <p-floatlabel variant="on" class="w-3/4">
+        <textarea
+          rows="3"
+          class="w-full"
+          name="observacoes"
+          [ngModel]="servicoEdicao?.observacoes"
+          style="resize: none"
+          pTextarea
+        ></textarea>
+        <label for="observacoes">Digite observações aqui...</label>
+      </p-floatlabel>
+    </div>
+    @if (!servicoEdicao) {
+      <div class="flex gap-4 items-center py-2">
+        <p-togglebutton
+          [(ngModel)]="cadastrarNovoProduto"
+          onLabel="Cadastrando novo produto a ser vendido..."
+          [ngModelOptions]="{ standalone: true }"
+          offLabel="Não encontrei o produto"
+          offIcon="pi pi-exclamation-triangle"
+          onIcon="pi pi-file-plus"
+        ></p-togglebutton>
+      </div>
+      @if (cadastrarNovoProduto) {
+        <div class="pt-2">
+          <p-message severity="secondary" icon="pi pi-info-circle"
+            >Esse produto será relacionado a esse serviço automaticamente</p-message
+          >
+        </div>
+      }
+    }
+  </p-fieldset>
+  @if (cadastrarNovoProduto) {
+    <p-fieldset legend="Novo Produto">
+      <div class="flex gap-4 pb-4">
+        <!-- Número de série -->
+        <p-iftalabel>
+          <input
+            placeholder="..."
+            type="text"
+            pInputText
+            [(ngModel)]="produtoInput.value"
+            name="numeroSerieProduto"
+            required
+            class="w-72"
+          />
+          <label for="numeroSerieProduto">Número de Série</label>
+        </p-iftalabel>
+        <!-- Aparelho -->
+        <p-iftalabel>
+          <input placeholder="..." type="text" pInputText ngModel name="aparelhoProduto" required />
+          <label for="aparelhoProduto">Aparelho</label>
+        </p-iftalabel>
+
+        <!-- Cor -->
+        <p-iftalabel>
+          <input placeholder="..." type="text" pInputText ngModel name="corProduto" required />
+          <label for="corProduto">Cor</label>
+        </p-iftalabel>
+      </div>
+      <div class="flex flex-col gap-4">
+        <!-- Modelo -->
+        <p-iftalabel>
+          <input
+            placeholder="..."
+            type="text"
+            class="w-1/2"
+            pInputText
+            ngModel
+            name="modeloProduto"
+            required
+          />
+          <label for="modeloProduto">Modelo</label>
+        </p-iftalabel>
+        <!-- Observacoes -->
+        <p-floatlabel variant="on">
+          <textarea
+            rows="3"
+            name="observacoesProduto"
+            ngModel
+            style="resize: none"
+            class="w-3/4"
+            pTextarea
+          ></textarea>
+          <label for="observacoesProduto">Digite observações sobre o produto aqui...</label>
+        </p-floatlabel>
+      </div>
+    </p-fieldset>
+  }
+  <p-button
+    [disabled]="servicoForm.invalid"
+    [label]="!!servicoEdicao ? 'Salvar Alterações' : 'Registrar Serviço'"
+    type="submit"
+  ></p-button>
+</form>

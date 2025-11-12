@@ -1,257 +1,348 @@
 <p-toast />
-<main class="flex flex-col gap-4">
-  <div class="flex items-center gap-4">
-    <p-select
-      [(ngModel)]="mesSelecionado"
-      [options]="mesesDisponiveis"
-      optionLabel="label"
-      optionValue="value"
-      placeholder="Selecione o m�s"
-      [style]="{ width: '15rem' }"
-      (onChange)="carregarDadosFinanceiros()"
-    />
-    <p-button
-      label="Comparar Meses"
-      icon="pi pi-chart-bar"
-      severity="secondary"
-      [outlined]="true"
-      (onClick)="abrirModalComparacao()"
-    />
+<main>
+  <div class="flex flex-col gap-4">
+    <!-- Header com seleção de mês -->
+    <div class="flex items-center gap-4">
+      <p-button
+        label="Selecionar Mês"
+        icon="pi pi-calendar"
+        (click)="abrirSeletorMes()"
+        [outlined]="true"
+      ></p-button>
+      <p-button
+        label="Comparar Meses"
+        icon="pi pi-chart-line"
+        (click)="abrirModalComparacao()"
+        severity="secondary"
+      ></p-button>
+    </div>
+
+    <!-- Cards de dados financeiros -->
+    @if (dadosMesAtual) {
+      <div class="flex gap-4">
+        <p-card [style]="{ width: '350px' }">
+          <ng-template #header>
+            <div class="flex items-center gap-2 p-4 pb-2">
+              <i class="pi pi-dollar text-green-600 text-2xl"></i>
+              <h3 class="text-lg font-semibold">Faturamento</h3>
+            </div>
+          </ng-template>
+          <div class="text-center">
+            <p class="text-3xl font-bold text-green-600">
+              {{ dadosMesAtual.faturamento | currency: 'BRL' }}
+            </p>
+            <p class="text-sm text-neutral-500 mt-2">
+              {{ getNomeMes(dadosMesAtual.mes) }} / {{ dadosMesAtual.ano }}
+            </p>
+          </div>
+        </p-card>
+
+        <p-card [style]="{ width: '350px' }">
+          <ng-template #header>
+            <div class="flex items-center gap-2 p-4 pb-2">
+              <i class="pi pi-shopping-cart text-red-600 text-2xl"></i>
+              <h3 class="text-lg font-semibold">Custo</h3>
+            </div>
+          </ng-template>
+          <div class="text-center">
+            <p class="text-3xl font-bold text-red-600">
+              {{ dadosMesAtual.custo | currency: 'BRL' }}
+            </p>
+            <p class="text-sm text-neutral-500 mt-2">
+              {{ getNomeMes(dadosMesAtual.mes) }} / {{ dadosMesAtual.ano }}
+            </p>
+          </div>
+        </p-card>
+
+        <p-card [style]="{ width: '350px' }">
+          <ng-template #header>
+            <div class="flex items-center gap-2 p-4 pb-2">
+              <i class="pi pi-chart-bar text-blue-600 text-2xl"></i>
+              <h3 class="text-lg font-semibold">Lucro</h3>
+            </div>
+          </ng-template>
+          <div class="text-center">
+            <p
+              class="text-3xl font-bold"
+              [ngClass]="
+                dadosMesAtual.lucro >= 0 ? 'text-blue-600' : 'text-orange-600'
+              "
+            >
+              {{ dadosMesAtual.lucro | currency: 'BRL' }}
+            </p>
+            <p class="text-sm text-neutral-500 mt-2">
+              {{ getNomeMes(dadosMesAtual.mes) }} / {{ dadosMesAtual.ano }}
+            </p>
+          </div>
+        </p-card>
+      </div>
+    } @else {
+      <div class="flex justify-center items-center h-64">
+        <p-progressspinner />
+      </div>
+    }
   </div>
 
-  <div class="flex gap-4 pt-4">
-    <p-card [style]="{ width: '20rem' }">
-      <ng-template #header>
-        <div class="flex items-center gap-2 p-4">
-          <i class="pi pi-dollar text-3xl text-green-600"></i>
-          <span class="text-lg font-semibold">Faturamento</span>
-        </div>
-      </ng-template>
-      <div class="flex flex-col items-center">
-        <span class="text-3xl font-bold text-green-600">{{
-          dadosFinanceiros.faturamento | currency: 'BRL'
-        }}</span>
-        <span class="text-sm text-neutral-500"
-          >{{ mesesDisponiveis[dadosFinanceiros.mes].label }} /
-          {{ dadosFinanceiros.ano }}</span
-        >
-      </div>
-    </p-card>
-
-    <p-card [style]="{ width: '20rem' }">
-      <ng-template #header>
-        <div class="flex items-center gap-2 p-4">
-          <i class="pi pi-shopping-cart text-3xl text-red-600"></i>
-          <span class="text-lg font-semibold">Custo</span>
-        </div>
-      </ng-template>
-      <div class="flex flex-col items-center">
-        <span class="text-3xl font-bold text-red-600">{{
-          dadosFinanceiros.custo | currency: 'BRL'
-        }}</span>
-        <span class="text-sm text-neutral-500"
-          >{{ mesesDisponiveis[dadosFinanceiros.mes].label }} /
-          {{ dadosFinanceiros.ano }}</span
-        >
-      </div>
-    </p-card>
-
-    <p-card [style]="{ width: '20rem' }">
-      <ng-template #header>
-        <div class="flex items-center gap-2 p-4">
-          <i
-            class="pi pi-chart-line text-3xl"
-            [ngClass]="{
-              'text-blue-600': dadosFinanceiros.lucro >= 0,
-              'text-orange-600': dadosFinanceiros.lucro < 0
-            }"
-          ></i>
-          <span class="text-lg font-semibold">Lucro</span>
-        </div>
-      </ng-template>
-      <div class="flex flex-col items-center">
-        <span
-          class="text-3xl font-bold"
-          [ngClass]="{
-            'text-blue-600': dadosFinanceiros.lucro >= 0,
-            'text-orange-600': dadosFinanceiros.lucro < 0
-          }"
-          >{{ dadosFinanceiros.lucro | currency: 'BRL' }}</span
-        >
-        <span class="text-sm text-neutral-500"
-          >{{ mesesDisponiveis[dadosFinanceiros.mes].label }} /
-          {{ dadosFinanceiros.ano }}</span
-        >
-      </div>
-    </p-card>
-  </div>
-
+  <!-- Modal de Seleção de Mês -->
   <p-dialog
-    header="Compara��o de Meses"
+    header="Selecionar Mês"
+    [(visible)]="modalSeletorMesAberto"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '25rem' }"
+  >
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-2">
+        <label for="ano" class="font-semibold">Ano</label>
+        <p-select
+          [(ngModel)]="anoSelecionado"
+          [options]="anosDisponiveis"
+          placeholder="Selecione o ano"
+          inputId="ano"
+        />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="mes" class="font-semibold">Mês</label>
+        <p-select
+          [(ngModel)]="mesSelecionado"
+          [options]="mesesDisponiveis"
+          optionLabel="nome"
+          optionValue="valor"
+          placeholder="Selecione o mês"
+          inputId="mes"
+        />
+      </div>
+    </div>
+    <ng-template #footer>
+      <div class="flex justify-end gap-2">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (click)="modalSeletorMesAberto = false"
+        ></p-button>
+        <p-button
+          label="Confirmar"
+          (click)="confirmarSelecaoMes()"
+          [disabled]="!anoSelecionado || !mesSelecionado"
+        ></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Modal de Comparação -->
+  <p-dialog
+    header="Comparar Meses"
     [(visible)]="modalComparacaoAberto"
     [modal]="true"
     [draggable]="false"
     [style]="{ width: '50rem' }"
   >
     <div class="flex flex-col gap-4">
-      <div class="flex gap-4 items-center">
-        <p-select
-          [(ngModel)]="mesComparacao1"
-          [options]="mesesDisponiveis"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Selecione o 1� m�s"
-          [style]="{ width: '15rem' }"
-        />
-        <span class="text-neutral-500 font-semibold">VS</span>
-        <p-select
-          [(ngModel)]="mesComparacao2"
-          [options]="mesesDisponiveis"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Selecione o 2� m�s"
-          [style]="{ width: '15rem' }"
-        />
-        <p-button
-          label="Comparar"
-          icon="pi pi-check"
-          (onClick)="realizarComparacao()"
-          [disabled]="!mesComparacao1 || !mesComparacao2 || mesComparacao1 === mesComparacao2"
-        />
+      <!-- Seletores de meses -->
+      <div class="flex gap-4">
+        <div class="flex flex-col gap-2 flex-1">
+          <label class="font-semibold">Primeiro Mês</label>
+          <div class="flex gap-2">
+            <p-select
+              [(ngModel)]="comparacao.ano1"
+              [options]="anosDisponiveis"
+              placeholder="Ano"
+              class="flex-1"
+            />
+            <p-select
+              [(ngModel)]="comparacao.mes1"
+              [options]="mesesDisponiveis"
+              optionLabel="nome"
+              optionValue="valor"
+              placeholder="Mês"
+              class="flex-1"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2 flex-1">
+          <label class="font-semibold">Segundo Mês</label>
+          <div class="flex gap-2">
+            <p-select
+              [(ngModel)]="comparacao.ano2"
+              [options]="anosDisponiveis"
+              placeholder="Ano"
+              class="flex-1"
+            />
+            <p-select
+              [(ngModel)]="comparacao.mes2"
+              [options]="mesesDisponiveis"
+              optionLabel="nome"
+              optionValue="valor"
+              placeholder="Mês"
+              class="flex-1"
+            />
+          </div>
+        </div>
       </div>
 
-      @if (comparacaoRealizada) {
-        <div class="flex gap-4 pt-4">
+      <div class="flex justify-center">
+        <p-button
+          label="Comparar"
+          icon="pi pi-sync"
+          (click)="realizarComparacao()"
+          [disabled]="
+            !comparacao.ano1 ||
+            !comparacao.mes1 ||
+            !comparacao.ano2 ||
+            !comparacao.mes2 ||
+            (comparacao.ano1 === comparacao.ano2 && comparacao.mes1 === comparacao.mes2)
+          "
+        ></p-button>
+      </div>
+
+      <!-- Resultados da comparação -->
+      @if (dadosComparacao) {
+        <p-divider />
+        <div class="flex gap-4">
+          <!-- Coluna do Mês 1 -->
           <div class="flex flex-col gap-4 flex-1">
-            <h3 class="text-lg font-semibold text-center text-primary">
-              {{ mesesDisponiveis[dadosComparacao1.mes].label }} /
-              {{ dadosComparacao1.ano }}
+            <h3 class="text-lg font-semibold text-center">
+              {{ getNomeMes(dadosComparacao.mes1.mes) }} / {{ dadosComparacao.mes1.ano }}
             </h3>
 
             <p-card>
               <ng-template #header>
-                <div class="flex items-center gap-2 p-4">
-                  <i class="pi pi-dollar text-2xl text-green-600"></i>
+                <div class="flex items-center gap-2 p-3 pb-2">
+                  <i class="pi pi-dollar text-green-600"></i>
                   <span class="font-semibold">Faturamento</span>
                 </div>
               </ng-template>
-              <div class="flex justify-center">
-                <span class="text-2xl font-bold text-green-600">{{
-                  dadosComparacao1.faturamento | currency: 'BRL'
-                }}</span>
-              </div>
+              <p class="text-2xl font-bold text-green-600 text-center">
+                {{ dadosComparacao.mes1.faturamento | currency: 'BRL' }}
+              </p>
             </p-card>
 
             <p-card>
               <ng-template #header>
-                <div class="flex items-center gap-2 p-4">
-                  <i class="pi pi-shopping-cart text-2xl text-red-600"></i>
+                <div class="flex items-center gap-2 p-3 pb-2">
+                  <i class="pi pi-shopping-cart text-red-600"></i>
                   <span class="font-semibold">Custo</span>
                 </div>
               </ng-template>
-              <div class="flex justify-center">
-                <span class="text-2xl font-bold text-red-600">{{
-                  dadosComparacao1.custo | currency: 'BRL'
-                }}</span>
-              </div>
+              <p class="text-2xl font-bold text-red-600 text-center">
+                {{ dadosComparacao.mes1.custo | currency: 'BRL' }}
+              </p>
             </p-card>
 
             <p-card>
               <ng-template #header>
-                <div class="flex items-center gap-2 p-4">
-                  <i
-                    class="pi pi-chart-line text-2xl"
-                    [ngClass]="{
-                      'text-blue-600': dadosComparacao1.lucro >= 0,
-                      'text-orange-600': dadosComparacao1.lucro < 0
-                    }"
-                  ></i>
+                <div class="flex items-center gap-2 p-3 pb-2">
+                  <i class="pi pi-chart-bar text-blue-600"></i>
                   <span class="font-semibold">Lucro</span>
                 </div>
               </ng-template>
-              <div class="flex justify-center">
-                <span
-                  class="text-2xl font-bold"
-                  [ngClass]="{
-                    'text-blue-600': dadosComparacao1.lucro >= 0,
-                    'text-orange-600': dadosComparacao1.lucro < 0
-                  }"
-                  >{{ dadosComparacao1.lucro | currency: 'BRL' }}</span
-                >
-              </div>
+              <p
+                class="text-2xl font-bold text-center"
+                [ngClass]="dadosComparacao.mes1.lucro >= 0 ? 'text-blue-600' : 'text-orange-600'"
+              >
+                {{ dadosComparacao.mes1.lucro | currency: 'BRL' }}
+              </p>
             </p-card>
           </div>
 
+          <!-- Coluna do Mês 2 -->
           <div class="flex flex-col gap-4 flex-1">
-            <h3 class="text-lg font-semibold text-center text-primary">
-              {{ mesesDisponiveis[dadosComparacao2.mes].label }} /
-              {{ dadosComparacao2.ano }}
+            <h3 class="text-lg font-semibold text-center">
+              {{ getNomeMes(dadosComparacao.mes2.mes) }} / {{ dadosComparacao.mes2.ano }}
             </h3>
 
             <p-card>
               <ng-template #header>
-                <div class="flex items-center gap-2 p-4">
-                  <i class="pi pi-dollar text-2xl text-green-600"></i>
+                <div class="flex items-center gap-2 p-3 pb-2">
+                  <i class="pi pi-dollar text-green-600"></i>
                   <span class="font-semibold">Faturamento</span>
                 </div>
               </ng-template>
-              <div class="flex justify-center">
-                <span class="text-2xl font-bold text-green-600">{{
-                  dadosComparacao2.faturamento | currency: 'BRL'
-                }}</span>
+              <div class="text-center">
+                <p class="text-2xl font-bold text-green-600">
+                  {{ dadosComparacao.mes2.faturamento | currency: 'BRL' }}
+                </p>
+                <p
+                  class="text-sm mt-2"
+                  [ngClass]="
+                    dadosComparacao.diferencaPercentual.faturamento >= 0
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                  "
+                >
+                  {{
+                    dadosComparacao.diferencaPercentual.faturamento >= 0 ? '+' : ''
+                  }}{{ dadosComparacao.diferencaPercentual.faturamento | number: '1.2-2' }}%
+                </p>
               </div>
             </p-card>
 
             <p-card>
               <ng-template #header>
-                <div class="flex items-center gap-2 p-4">
-                  <i class="pi pi-shopping-cart text-2xl text-red-600"></i>
+                <div class="flex items-center gap-2 p-3 pb-2">
+                  <i class="pi pi-shopping-cart text-red-600"></i>
                   <span class="font-semibold">Custo</span>
                 </div>
               </ng-template>
-              <div class="flex justify-center">
-                <span class="text-2xl font-bold text-red-600">{{
-                  dadosComparacao2.custo | currency: 'BRL'
-                }}</span>
+              <div class="text-center">
+                <p class="text-2xl font-bold text-red-600">
+                  {{ dadosComparacao.mes2.custo | currency: 'BRL' }}
+                </p>
+                <p
+                  class="text-sm mt-2"
+                  [ngClass]="
+                    dadosComparacao.diferencaPercentual.custo >= 0
+                      ? 'text-red-600'
+                      : 'text-green-600'
+                  "
+                >
+                  {{ dadosComparacao.diferencaPercentual.custo >= 0 ? '+' : ''
+                  }}{{ dadosComparacao.diferencaPercentual.custo | number: '1.2-2' }}%
+                </p>
               </div>
             </p-card>
 
             <p-card>
               <ng-template #header>
-                <div class="flex items-center gap-2 p-4">
-                  <i
-                    class="pi pi-chart-line text-2xl"
-                    [ngClass]="{
-                      'text-blue-600': dadosComparacao2.lucro >= 0,
-                      'text-orange-600': dadosComparacao2.lucro < 0
-                    }"
-                  ></i>
+                <div class="flex items-center gap-2 p-3 pb-2">
+                  <i class="pi pi-chart-bar text-blue-600"></i>
                   <span class="font-semibold">Lucro</span>
                 </div>
               </ng-template>
-              <div class="flex justify-center">
-                <span
+              <div class="text-center">
+                <p
                   class="text-2xl font-bold"
-                  [ngClass]="{
-                    'text-blue-600': dadosComparacao2.lucro >= 0,
-                    'text-orange-600': dadosComparacao2.lucro < 0
-                  }"
-                  >{{ dadosComparacao2.lucro | currency: 'BRL' }}</span
+                  [ngClass]="dadosComparacao.mes2.lucro >= 0 ? 'text-blue-600' : 'text-orange-600'"
                 >
+                  {{ dadosComparacao.mes2.lucro | currency: 'BRL' }}
+                </p>
+                <p
+                  class="text-sm mt-2"
+                  [ngClass]="
+                    dadosComparacao.diferencaPercentual.lucro >= 0
+                      ? 'text-green-600'
+                      : 'text-red-600'
+                  "
+                >
+                  {{ dadosComparacao.diferencaPercentual.lucro >= 0 ? '+' : ''
+                  }}{{ dadosComparacao.diferencaPercentual.lucro | number: '1.2-2' }}%
+                </p>
               </div>
             </p-card>
           </div>
         </div>
       }
     </div>
-
     <ng-template #footer>
-      <p-button
-        label="Fechar"
-        icon="pi pi-times"
-        severity="secondary"
-        (onClick)="fecharModalComparacao()"
-      />
+      <div class="flex justify-end">
+        <p-button
+          label="Fechar"
+          severity="secondary"
+          (click)="fecharModalComparacao()"
+        ></p-button>
+      </div>
     </ng-template>
   </p-dialog>
 </main>
